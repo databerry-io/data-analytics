@@ -1,16 +1,16 @@
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.vectorstores import Chroma
-from langchain.text_splitter import CharacterTextSplitter
-from langchain import OpenAI, VectorDBQA
-from langchain.document_loaders import DirectoryLoader
-from langchain.prompts import PromptTemplate
+# from langchain.embeddings.openai import OpenAIEmbeddings
+# from langchain.vectorstores import Chroma
+# from langchain.text_splitter import CharacterTextSplitter
+# from langchain import OpenAI, VectorDBQA
+# from langchain.document_loaders import DirectoryLoader
+# from langchain.prompts import PromptTemplate
 from langchain.chains.question_answering import load_qa_chain
-from langchain.schema import Document
-import os
-import nltk
+# from langchain.schema import Document
 import config
 import logging
-from typing import List
+# from typing import List
+import pandas  as pd
+import pandasai as pdai
 
 # Initialize logging with the specified configuration
 logging.basicConfig(
@@ -38,56 +38,18 @@ LOGGER = logging.getLogger(__name__)
 #docsearch = Chroma.from_documents(texts, embeddings)
 
 # Define answer generation function
-def answer(prompt: str, documents: List[Document], persist_directory: str = config.PERSIST_DIR):
-
-    #documents = st.file_uploader("**Upload Your PDF File**", type=["pdf"])
-
-    # split the text to chuncks of of size 1000
-    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-    # Split the documents into chunks of size 1000 using a CharacterTextSplitter object
-    texts = text_splitter.split_documents(documents)
-
-    # Create a vector store from the chunks using an OpenAIEmbeddings object and a Chroma object
-    embeddings = OpenAIEmbeddings(openai_api_key=config.OPENAI_API_KEY)
-    docsearch = Chroma.from_documents(texts, embeddings)
+def answer(prompt: str, pai: pdai.PandasAI, df: pd.DataFrame):
 
     # Log a message indicating that the function has started
     LOGGER.info(f"Start answering based on prompt: {prompt}.")
 
-    # Create a prompt template using a template from the config module and input variables
-    # representing the context and question.
-    prompt_template = PromptTemplate(template=config.prompt_template, input_variables=["context", "question"])
-
-    # Load a QA chain using an OpenAI object, a chain type, and a prompt template.
-    doc_chain = load_qa_chain(
-        llm=OpenAI(
-            openai_api_key = config.OPENAI_API_KEY,
-            model_name="text-davinci-003",
-            temperature=0,
-            max_tokens=300,
-        ),
-        chain_type="stuff",
-        prompt=prompt_template,
-    )
-
-    # Log a message indicating the number of chunks to be considered when answering the user's query.
-    LOGGER.info(f"The top {config.k} chunks are considered to answer the user's query.")
-
-    # Create a VectorDBQA object using a vector store, a QA chain, and a number of chunks to consider.
-    qa = VectorDBQA(vectorstore=docsearch, combine_documents_chain=doc_chain, k=config.k)
-
-    # Call the VectorDBQA object to generate an answer to the prompt.
-    result = qa({"query": prompt})
-    answer = result["result"]
-
-    qa_sources = VectorDBQA.from_chain_type(llm=OpenAI(openai_api_key = config.OPENAI_API_KEY), chain_type="stuff", vectorstore=docsearch, return_source_documents=True)
-
-    result_sources = qa_sources({"query": prompt})
-    sources = result_sources['source_documents']
+    answer = pai(df, prompt=prompt)
 
     # Log a message indicating the answer that was generated
     LOGGER.info(f"The returned answer is: {answer}")
 
     # Log a message indicating that the function has finished and return the answer.
     LOGGER.info(f"Answering module over.")
-    return answer, sources
+    return answer
+
+
