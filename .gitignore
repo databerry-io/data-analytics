@@ -2,3 +2,11 @@ env/
 .chroma
 **/*__pycache__
 config.py
+cache/
+logs/
+pandasai.log
+.env
+**/*.ipynb_checkpoints
+test.py
+**/*.ipynb
+logs/
