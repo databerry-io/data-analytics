@@ -8,7 +8,12 @@ import config
 import pandas as pd
 from pandasai import PandasAI
 from src.pandasai_custom import CustomPandasAI
+from src.prompts import CustomGenerateResponsePrompt
+
 from pandasai.llm.openai import OpenAI
+from pandasai.middlewares.streamlit import StreamlitMiddleware
+import matplotlib.pyplot as plt
+
 
 from pandasai.exceptions import NoCodeFoundError
 from dotenv import load_dotenv
@@ -76,7 +81,11 @@ def main():
 
             st.session_state.df = df
             llm = OpenAI(temperature=0)
-            st.session_state.pai = PandasAI(llm=llm, conversational=False, enable_cache=False)
+            custom_prompts = {
+                "generate_response": CustomGenerateResponsePrompt,
+            }
+            st.session_state.pai = CustomPandasAI(llm=llm, conversational=True, enable_cache=False,
+                                                  non_default_prompts=custom_prompts)
         else:
             pai = st.session_state.pai
             df = st.session_state.df
@@ -124,8 +133,14 @@ def main():
                 df = st.session_state.df
                 pai = st.session_state.pai
                 try:
-                    output = pai.get_code_output(pai.last_code_executed, df)
-                    st.write(output)
+                    rerun_code = StreamlitMiddleware()(pai.last_code_generated)
+                    has_chart = rerun_code != pai.last_code_generated
+                    output, result = pai.get_code_output(rerun_code, df, use_error_correction_framework=False, has_chart=has_chart)
+
+                    if not has_chart:
+                        st.code(output)
+                        if result:
+                            st.code(result)
                 except NoCodeFoundError:
                     print("No code")
 
