@@ -43,7 +43,7 @@ def answer(prompt: str, pai: pdai.PandasAI, df: pd.DataFrame):
     # Log a message indicating that the function has started
     LOGGER.info(f"Start answering based on prompt: {prompt}.")
 
-    answer = pai(df, prompt=prompt)
+    answer = pai.custom_run(df, prompt=prompt)
 
     # Log a message indicating the answer that was generated
     LOGGER.info(f"The returned answer is: {answer}")
