@@ -67,7 +67,7 @@ def parse_csv(file):
 # Define a function to parse a PDF file and extract its text content
 @st.cache_data
 def parse_xlsx(file) -> pd.DataFrame:
-    return pd.parse_excel(file)
+    return pd.read_excel(file)
 
 def convert_document_to_dict(document):
     return {
