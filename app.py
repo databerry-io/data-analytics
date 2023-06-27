@@ -9,20 +9,35 @@ import pandas as pd
 from pandasai import PandasAI
 from src.pandasai_custom import CustomPandasAI
 from src.prompts import CustomGenerateResponsePrompt
+from src.sqlite import * 
 
 from pandasai.llm.openai import OpenAI
 from pandasai.middlewares.streamlit import StreamlitMiddleware
-import matplotlib.pyplot as plt
 
 
 from pandasai.exceptions import NoCodeFoundError
 from dotenv import load_dotenv
+import sqlite3
 
 load_dotenv()
 
+conn = sqlite3.connect('prompt_log.db')
+cursor = conn.cursor()
+
+cursor.execute('''CREATE TABLE IF NOT EXISTS prompt_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    prompt TEXT,
+                    answer TEXT,
+                    code_executed TEXT,
+                    code_generated TEXT,
+                    error TEXT
+                )''')
+conn.commit()
+
 st.set_page_config(layout="wide")
 #Creating the chatbot interface
-st.title("Data Analytics Chatbot")
+# st.title("Data Analytics Chatbot")
+st.markdown("<h1 style='text-align: center;'>Mobius: Data Analytics</h1>", unsafe_allow_html=True)
 
 # Storing the chat
 if 'generated' not in st.session_state:
@@ -93,12 +108,14 @@ def main():
             # store the output
             st.session_state.past.append(user_input)
             st.session_state.generated.append(answer)
-            #   converted_sources = [convert_document_to_dict(doc) for doc in sources]
+            
             if pai.last_code_executed:
                 st.session_state.citation.append(pai.last_code_executed)
             else:
                 st.session_state.citation.append("# No code generated")
-            print(pai.last_code_executed)
+            
+            log_prompt(conn, cursor, user_input, answer, pai.last_code_executed, 
+                       pai.last_code_generated, pai.last_error)
 
         with st.container():
             col1, col2, _ = st.columns((25,50,25))
@@ -155,3 +172,5 @@ def main():
 # Run the app
 if __name__ == "__main__":
     main()
+
+conn.close()
