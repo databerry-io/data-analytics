@@ -134,7 +134,7 @@ def main():
                 pai = st.session_state.pai
                 try:
                     rerun_code = StreamlitMiddleware()(pai.last_code_generated)
-                    has_chart = rerun_code != pai.last_code_generated
+                    has_chart = rerun_code != "import streamlit as st\n" + pai.last_code_generated
                     output, result = pai.get_code_output(rerun_code, df, use_error_correction_framework=False, has_chart=has_chart)
 
                     if not has_chart:
