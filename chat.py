@@ -16,20 +16,6 @@ logging.basicConfig(
 )
 LOGGER = logging.getLogger(__name__)
 
-# Load documents from the specified directory using a DirectoryLoader object
-#loader = DirectoryLoader(config.FILE_DIR, glob='*.pdf')
-#documents = loader.load()
-#documents = st.file_uploader("**Upload Your PDF File**", type=["pdf"])
-
-# split the text to chuncks of of size 1000
-#text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-# Split the documents into chunks of size 1000 using a CharacterTextSplitter object
-#texts = text_splitter.split_documents(documents)
-
-# Create a vector store from the chunks using an OpenAIEmbeddings object and a Chroma object
-#embeddings = OpenAIEmbeddings(openai_api_key=config.OPENAI_API_KEY)
-#docsearch = Chroma.from_documents(texts, embeddings)
-
 # Define answer generation function
 def answer(prompt: str, pai: pdai.PandasAI, df: pd.DataFrame):
 
