@@ -18,7 +18,7 @@ from pandasai.constants import (
 )
 # from pandasai.exceptions import BadImportError, LLMNotFoundError
 # from pandasai.helpers._optional import import_dependency
-from pandasai.helpers.anonymizer import anonymize_dataframe_head
+# from pandasai.helpers.anonymizer import anonymize_dataframe_head
 # from pandasai.helpers.cache import Cache
 # from pandasai.helpers.notebook import Notebook
 from pandasai.helpers.save_chart import add_save_chart
@@ -29,19 +29,40 @@ from pandasai.helpers.save_chart import add_save_chart
 # from pandasai.middlewares.charts import ChartsMiddleware
 # from pandasai.prompts.correct_error_prompt import CorrectErrorPrompt
 # from pandasai.prompts.correct_multiples_prompt import CorrectMultipleDataframesErrorPrompt
-from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
+# from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
 # from pandasai.prompts.generate_response import GenerateResponsePrompt
-from pandasai.prompts.multiple_dataframes import MultipleDataframesPrompt
+# from pandasai.prompts.multiple_dataframes import MultipleDataframesPrompt
 
 from pandasai import PandasAI
 import contextlib
 import streamlit as st
 import matplotlib.pyplot as plt
 
+from .prompts import CodeSummaryPrompt
+
 class ExceededMaxRetriesError(Exception):
     """Raised when the maximum number of retries is exceeded"""
 
 class CustomPandasAI(PandasAI):
+    def generate_code_summary(self, df, prompt, code):
+        rows_to_display = 0 if self._enforce_privacy else 5
+
+        try:
+            response = self._llm.call(
+                        CodeSummaryPrompt(
+                            df_head=df.head(),
+                            num_rows=df.shape[0],
+                            num_columns=df.shape[1],
+                            rows_to_display=rows_to_display,
+                            prompt=prompt,
+                            code=code,
+                        ),
+                        prompt,
+                        suffix="\n\nAnswer:\n"
+                    )
+            return response
+        except Exception as e:
+            return f"Code summary failed to generate because of error: {e}"
 
     def custom_run(self,
         data_frame: Union[pd.DataFrame, List[pd.DataFrame]],
