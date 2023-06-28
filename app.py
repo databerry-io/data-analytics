@@ -49,6 +49,9 @@ if 'past' not in st.session_state:
 if 'citation' not in st.session_state:
     st.session_state['citation'] = []
 
+if 'generated_code' not in st.session_state:
+    st.session_state['generated_code'] = []
+
 # Define a function to clear the input text
 def clear_input_text():
     global input_text
@@ -109,10 +112,16 @@ def main():
             st.session_state.past.append(user_input)
             st.session_state.generated.append(answer)
             
+            
             if pai.last_code_executed:
                 st.session_state.citation.append(pai.last_code_executed)
             else:
-                st.session_state.citation.append("# No code generated")
+                st.session_state.citation.append("# No code executed")
+
+            if pai.last_code_generated:
+                st.session_state.generated_code.append(pai.last_code_generated)
+            else:
+                st.session_state.generated_code.append("# No code generated")
             
             log_prompt(conn, cursor, user_input, answer, pai.last_code_executed, 
                        pai.last_code_generated, pai.last_error)
@@ -144,8 +153,8 @@ def main():
             with col2:
                 #wrapped_string = textwrap.fill(item, width=50, break_long_words=True)
                 code = st.session_state.citation[-1]
-                st.code(code, language='python')
-                
+                code_generated = st.session_state.generated_code[-1]
+                st.code(code_generated, language='python')
             
                 df = st.session_state.df
                 pai = st.session_state.pai
@@ -155,9 +164,16 @@ def main():
                     output, result = pai.get_code_output(rerun_code, df, use_error_correction_framework=False, has_chart=has_chart)
 
                     if not has_chart:
-                        st.code(output)
+                        if output:
+                            st.code(output)
                         if result:
                             st.code(result)
+                    
+                    if code_generated:
+                        last_prompt = st.session_state.past[-1]
+                        code_summary = pai.generate_code_summary(df, last_prompt, code_generated)
+                        st.info(code_summary)
+
                 except NoCodeFoundError:
                     print("No code")
 
