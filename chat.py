@@ -4,6 +4,7 @@ import logging
 # from typing import List
 import pandas  as pd
 import pandasai as pdai
+from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
 
 # Initialize logging with the specified configuration
 logging.basicConfig(
@@ -32,3 +33,12 @@ def answer(prompt: str, pai: pdai.PandasAI, df: pd.DataFrame):
     return answer
 
 
+def get_prompt(prompt, data_frame, suffix="\n\nCode:\n"):
+    instruction = GeneratePythonCodePrompt(
+        prompt=prompt,
+        df_head=data_frame.head(5),
+        num_rows=data_frame.shape[0],
+        num_columns=data_frame.shape[1],
+    )
+    
+    return str(instruction) + str(prompt) + suffix
