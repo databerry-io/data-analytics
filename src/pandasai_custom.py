@@ -153,6 +153,7 @@ Code running:
                     with contextlib.redirect_stdout(output):
                         exec(code_to_run, environment)
                     code = code_to_run
+                    self.last_error = None
                     break
                 except Exception as e:
                     if not use_error_correction_framework:
