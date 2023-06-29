@@ -3,10 +3,10 @@ import streamlit as st
 from streamlit_chat import message
 # from langchain.text_splitter import RecursiveCharacterTextSplitter
 # from langchain.schema import Document
-import config
+# import config
 
 import pandas as pd
-from pandasai import PandasAI
+# from pandasai import PandasAI
 from src.pandasai_custom import CustomPandasAI
 from src.prompts import CustomGenerateResponsePrompt
 from src.sqlite import * 
@@ -27,6 +27,7 @@ cursor = conn.cursor()
 cursor.execute('''CREATE TABLE IF NOT EXISTS prompt_log (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     prompt TEXT,
+                    full_prompt TEXT,
                     answer TEXT,
                     code_executed TEXT,
                     code_generated TEXT,
@@ -107,7 +108,7 @@ def main():
         else:
             pai = st.session_state.pai
             df = st.session_state.df
-            answer = chat.answer(user_input, pai, df)
+            answer = chat.answer(user_input, pai, df.copy())
             # store the output
             st.session_state.past.append(user_input)
             st.session_state.generated.append(answer)
@@ -123,7 +124,8 @@ def main():
             else:
                 st.session_state.generated_code.append("# No code generated")
             
-            log_prompt(conn, cursor, user_input, answer, pai.last_code_executed, 
+            full_prompt = chat.get_prompt(user_input, df)
+            log_prompt(conn, cursor, user_input, full_prompt, answer, pai.last_code_executed, 
                        pai.last_code_generated, pai.last_error)
 
         with st.container():
@@ -156,7 +158,7 @@ def main():
                 code_generated = st.session_state.generated_code[-1]
                 st.code(code_generated, language='python')
             
-                df = st.session_state.df
+                df = st.session_state.df.copy()
                 pai = st.session_state.pai
                 try:
                     rerun_code = StreamlitMiddleware()(code_generated)
