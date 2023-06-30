@@ -20,9 +20,7 @@ class CodeSummaryPrompt(Prompt):
     # pylint: disable=too-few-public-methods
 
     text: str = """
-        You are provided with a pandas dataframe (df) with {num_rows} rows and {num_columns} columns.
-        This is the result of `print(df.head({rows_to_display}))`:
-        {df_head}.
+        You are provided with {number_dataframes} dataframes that the user wants to analyze.
 
         This was the prompt:
         {prompt}

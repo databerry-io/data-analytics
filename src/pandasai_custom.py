@@ -44,15 +44,16 @@ class ExceededMaxRetriesError(Exception):
     """Raised when the maximum number of retries is exceeded"""
 
 class CustomPandasAI(PandasAI):
-    def generate_code_summary(self, df, prompt, code):
+    def generate_code_summary(self, number_dataframes, prompt, code):
         rows_to_display = 0 if self._enforce_privacy else 5
 
         try:
             response = self._llm.call(
                         CodeSummaryPrompt(
-                            df_head=df.head(),
-                            num_rows=df.shape[0],
-                            num_columns=df.shape[1],
+                            # df_head=df.head(),
+                            # num_rows=df.shape[0],
+                            # num_columns=df.shape[1],
+                            number_dataframes=number_dataframes,
                             rows_to_display=rows_to_display,
                             prompt=prompt,
                             code=code,

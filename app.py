@@ -128,7 +128,7 @@ def main():
             else:
                 st.session_state.generated_code.append("# No code generated")
             
-            full_prompt = chat.get_prompt(user_input, df)
+            full_prompt = chat.get_prompt(user_input, df, multiple=(isinstance(df, list)))
             log_prompt(conn, cursor, user_input, full_prompt, answer, pai.last_code_executed, 
                        pai.last_code_generated, pai.last_error)
 
@@ -163,12 +163,12 @@ def main():
                 code_generated = st.session_state.generated_code[-1]
                 st.code(code_generated, language='python')
             
-                df = st.session_state.df.copy()
+                df = st.session_state.df.copy() # Change
                 pai = st.session_state.pai
                 try:
                     rerun_code = StreamlitMiddleware()(code_generated)
                     has_chart = rerun_code != "import streamlit as st\n" + code_generated
-                    output, result = pai.get_code_output(rerun_code, df, use_error_correction_framework=False, has_chart=has_chart)
+                    output, result = pai.get_code_output(rerun_code, df, use_error_correction_framework=False, has_chart=has_chart) 
 
                     if not has_chart:
                         if output:
@@ -178,7 +178,7 @@ def main():
                     
                     if code_generated:
                         last_prompt = st.session_state.past[-1]
-                        code_summary = pai.generate_code_summary(df[-1], last_prompt, code_generated)
+                        code_summary = pai.generate_code_summary(len(df), last_prompt, code_generated) # Change
                         st.info(code_summary)
 
                 except NoCodeFoundError:
