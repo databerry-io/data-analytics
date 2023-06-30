@@ -11,4 +11,3 @@ test.py
 **/*.ipynb
 logs/
 prompt_log.db
-pages/
