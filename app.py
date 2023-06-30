@@ -47,8 +47,8 @@ if 'generated' not in st.session_state:
 if 'past' not in st.session_state:
     st.session_state['past'] = []
 
-if 'citation' not in st.session_state:
-    st.session_state['citation'] = []
+if 'code_executed' not in st.session_state:
+    st.session_state['code_executed'] = []
 
 if 'generated_code' not in st.session_state:
     st.session_state['generated_code'] = []
@@ -108,24 +108,32 @@ def main():
         else:
             pai = st.session_state.pai
             df = st.session_state.df
+
+            # Use DF randomization to generate better df.head() for context
             random_df = chat.randomize_df(df.copy())
+            # Generate answer by call to PandasAI
             answer = chat.answer(user_input, pai, random_df)
-            # store the output
+            
+            # Store the output in session history
             st.session_state.past.append(user_input)
             st.session_state.generated.append(answer)
             
-            
+            # Ensure that code_executed is not empty
             if pai.last_code_executed:
-                st.session_state.citation.append(pai.last_code_executed)
+                st.session_state.code_executed.append(pai.last_code_executed)
             else:
-                st.session_state.citation.append("# No code executed")
+                st.session_state.code_executed.append("# No code executed")
 
+            # Ensure that code_generated is not empty
             if pai.last_code_generated:
                 st.session_state.generated_code.append(pai.last_code_generated)
             else:
                 st.session_state.generated_code.append("# No code generated")
             
+            # Generate the full prompt passed to the LLM for logging
             full_prompt = chat.get_prompt(user_input, df)
+
+            # Log the prompt-answer pair + metadata in the database
             log_prompt(conn, cursor, user_input, full_prompt, answer, pai.last_code_executed, 
                        pai.last_code_generated, pai.last_error)
 
@@ -155,23 +163,31 @@ def main():
                     message(st.session_state["generated"][i], key=str(i))
             with col2:
                 #wrapped_string = textwrap.fill(item, width=50, break_long_words=True)
-                code = st.session_state.citation[-1]
+
+                # Grab last code generated
                 code_generated = st.session_state.generated_code[-1]
                 st.code(code_generated, language='python')
-            
+
                 df = st.session_state.df.copy()
                 pai = st.session_state.pai
                 try:
+                    # Replace any plots with streamlit plots for display
                     rerun_code = StreamlitMiddleware()(code_generated)
+
+                    # Not the most rigorous implementation of checking for charts, but it works
                     has_chart = rerun_code != "import streamlit as st\n" + code_generated
+
+                    # Get output and result, which holds the standard io stream output
                     output, result = pai.get_code_output(rerun_code, df, use_error_correction_framework=False, has_chart=has_chart)
 
+                    # Only generate the output code and result if there is no chart
                     if not has_chart:
                         if output:
                             st.code(output)
                         if result:
                             st.code(result)
                     
+                    # If there is code, generate a code summary to explain what the code does
                     if code_generated:
                         last_prompt = st.session_state.past[-1]
                         code_summary = pai.generate_code_summary(df, last_prompt, code_generated)
@@ -179,11 +195,6 @@ def main():
 
                 except NoCodeFoundError:
                     print("No code")
-
-    # if st.session_state['generated']:
-    #     for i in range(len(st.session_state['generated'])-1, -1, -1):
-    #         message(st.session_state["generated"][i], key=str(i))
-    #     message(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
 
 # Run the app
 if __name__ == "__main__":

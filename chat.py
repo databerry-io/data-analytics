@@ -34,6 +34,9 @@ def answer(prompt: str, pai: pdai.PandasAI, df: pd.DataFrame):
 
 
 def get_prompt(prompt, data_frame, suffix="\n\nCode:\n"):
+    """
+    Retrieve full prompt passed to LLM for logging purposes
+    """
     instruction = GeneratePythonCodePrompt(
         prompt=prompt,
         df_head=data_frame.head(5),
@@ -44,6 +47,10 @@ def get_prompt(prompt, data_frame, suffix="\n\nCode:\n"):
     return str(instruction) + str(prompt) + suffix
 
 def randomize_df(df, add_nulls=False):
+    """
+    Sort df to ensure better df.head() representation
+    """
+
     df['NullCount'] = df.isnull().sum(axis=1)
     df_sorted = df.sort_values('NullCount', ascending=True)
 

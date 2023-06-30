@@ -269,8 +269,8 @@ Code running:
 
                     code_to_run = self._retry_run_code(code, e, multiple)
             
-            # if count == self._max_retries:
-            #     raise ExceededMaxRetriesError("Exceeded maximum number of retries")
+            if count == self._max_retries:
+                raise ExceededMaxRetriesError("Exceeded maximum number of retries")
 
         captured_output = output.getvalue().strip()
 
@@ -280,6 +280,8 @@ Code running:
         match = re.match(r"^print\((.*)\)$", last_line)
 
         result = ""
+        # Evaluate the last line and return its value or the captured output only if it isn't a print statement
+        # Print statements are captured by default, we print the last line IFF there is no print statement for the final line
         if not match and not has_chart:
             try:
                 res_output = io.StringIO()
