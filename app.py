@@ -127,9 +127,9 @@ def main():
                 st.session_state.generated_code.append(pai.last_code_generated)
             else:
                 st.session_state.generated_code.append("# No code generated")
-            for item in df:
-                full_prompt = chat.get_prompt(user_input, item)
-                log_prompt(conn, cursor, user_input, full_prompt, answer, pai.last_code_executed, 
+            
+            full_prompt = chat.get_prompt(user_input, df)
+            log_prompt(conn, cursor, user_input, full_prompt, answer, pai.last_code_executed, 
                        pai.last_code_generated, pai.last_error)
 
         with st.container():
