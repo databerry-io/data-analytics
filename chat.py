@@ -4,7 +4,8 @@ import logging
 # from typing import List
 import pandas  as pd
 import pandasai as pdai
-from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
+# from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
+from src.prompts import CustomGeneratePythonCodePrompt
 
 # Initialize logging with the specified configuration
 logging.basicConfig(
@@ -18,7 +19,7 @@ logging.basicConfig(
 LOGGER = logging.getLogger(__name__)
 
 # Define answer generation function
-def answer(prompt: str, pai: pdai.PandasAI, df: pd.DataFrame):
+def run_prompt(prompt: str, pai: pdai.PandasAI, df: pd.DataFrame):
 
     # Log a message indicating that the function has started
     LOGGER.info(f"Start answering based on prompt: {prompt}.")
@@ -37,9 +38,11 @@ def get_prompt(prompt, data_frame, suffix="\n\nCode:\n"):
     """
     Retrieve full prompt passed to LLM for logging purposes
     """
-    instruction = GeneratePythonCodePrompt(
+
+    df_head = data_frame.head().to_csv(index=False)
+    instruction = CustomGeneratePythonCodePrompt(
         prompt=prompt,
-        df_head=data_frame.head(5),
+        df_head=data_frame.head(),
         num_rows=data_frame.shape[0],
         num_columns=data_frame.shape[1],
     )
@@ -67,3 +70,10 @@ def randomize_df(df, add_nulls=False):
         df_final.reset_index(drop=True, inplace=True)
 
     return df_final
+
+def extract_dfs(env):
+    dfs = []
+    for key in env:
+        if isinstance(env[key], pd.DataFrame):
+            dfs.append(env[key])
+    return dfs

@@ -19,4 +19,5 @@ def retrieve_prompt_log(cursor):
     """
     cursor.execute('''SELECT * FROM prompt_log''')
     log_data = cursor.fetchall()
+    log_data = log_data[::-1]
     return log_data

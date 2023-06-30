@@ -1,4 +1,4 @@
-import chat
+from chat import *
 import streamlit as st
 from streamlit_chat import message
 # from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -101,8 +101,8 @@ def main():
             st.session_state.df = df
             llm = OpenAI(temperature=0)
             custom_prompts = {
+                "generate_python_code": CustomGeneratePythonCodePrompt,
                 "generate_response": CustomGenerateResponsePrompt,
-                "generate_python_code": GeneratePythonCodePrompt,
             }
             st.session_state.pai = CustomPandasAI(llm=llm, conversational=True, enable_cache=False,
                                                   non_default_prompts=custom_prompts)
@@ -111,10 +111,10 @@ def main():
             df = st.session_state.df
 
             # Use DF randomization to generate better df.head() for context
-            random_df = chat.randomize_df(df.copy(), add_nulls=True)
+            random_df = randomize_df(df.copy(), add_nulls=False)
             # st.dataframe(random_df.head(5))
             # Generate answer by call to PandasAI
-            answer = chat.answer(user_input, pai, random_df)
+            answer = run_prompt(user_input, pai, random_df)
             
             # Store the output in session history
             st.session_state.past.append(user_input)
@@ -133,7 +133,7 @@ def main():
                 st.session_state.generated_code.append("# No code generated")
             
             # Generate the full prompt passed to the LLM for logging
-            full_prompt = chat.get_prompt(user_input, df)
+            full_prompt = get_prompt(user_input, df)
 
             # Log the prompt-answer pair + metadata in the database
             log_prompt(conn, cursor, user_input, full_prompt, answer, pai.last_code_executed, 

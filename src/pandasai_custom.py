@@ -18,7 +18,7 @@ from pandasai.constants import (
 )
 # from pandasai.exceptions import BadImportError, LLMNotFoundError
 # from pandasai.helpers._optional import import_dependency
-# from pandasai.helpers.anonymizer import anonymize_dataframe_head
+from pandasai.helpers.anonymizer import anonymize_dataframe_head
 # from pandasai.helpers.cache import Cache
 # from pandasai.helpers.notebook import Notebook
 from pandasai.helpers.save_chart import add_save_chart
@@ -29,9 +29,9 @@ from pandasai.helpers.save_chart import add_save_chart
 # from pandasai.middlewares.charts import ChartsMiddleware
 # from pandasai.prompts.correct_error_prompt import CorrectErrorPrompt
 # from pandasai.prompts.correct_multiples_prompt import CorrectMultipleDataframesErrorPrompt
-# from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
+from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
 # from pandasai.prompts.generate_response import GenerateResponsePrompt
-# from pandasai.prompts.multiple_dataframes import MultipleDataframesPrompt
+from pandasai.prompts.multiple_dataframes import MultipleDataframesPrompt
 
 from pandasai import PandasAI
 import contextlib
@@ -63,7 +63,140 @@ class CustomPandasAI(PandasAI):
             return response
         except Exception as e:
             return f"Code summary failed to generate because of error: {e}"
+    # def run(
+    #     self,
+    #     data_frame: Union[pd.DataFrame, List[pd.DataFrame]],
+    #     prompt: str,
+    #     is_conversational_answer: bool = None,
+    #     show_code: bool = False,
+    #     anonymize_df: bool = True,
+    #     use_error_correction_framework: bool = True,
+    # ) -> Union[str, pd.DataFrame]:
+    #     """
+    #     Run the PandasAI to make Dataframes Conversational.
 
+    #     Args:
+    #         data_frame (Union[pd.DataFrame, List[pd.DataFrame]]): A pandas Dataframe
+    #         prompt (str): A prompt to query about the Dataframe
+    #         is_conversational_answer (bool): Whether to return answer in conversational
+    #         form. Default to False
+    #         show_code (bool): To show the intermediate python code generated on the
+    #         prompt. Default to False
+    #         anonymize_df (bool): Running the code with Sensitive Data. Default to True
+    #         use_error_correction_framework (bool): Turn on Error Correction mechanism.
+    #         Default to True
+
+    #     Returns (str): Answer to the Input Questions about the DataFrame
+
+    #     """
+
+    #     self._start_time = time.time()
+
+    #     self.log(f"Running PandasAI with {self._llm.type} LLM...")
+
+    #     self._prompt_id = str(uuid.uuid4())
+    #     self.log(f"Prompt ID: {self._prompt_id}")
+
+    #     try:
+    #         if self._enable_cache and self._cache and self._cache.get(prompt):
+    #             self.log("Using cached response")
+    #             code = self._cache.get(prompt)
+    #         else:
+    #             rows_to_display = 0 if self._enforce_privacy else 5
+
+    #             multiple: bool = isinstance(data_frame, list)
+
+    #             if multiple:
+    #                 heads = [
+    #                     anonymize_dataframe_head(dataframe)
+    #                     if anonymize_df
+    #                     else dataframe.head(rows_to_display)
+    #                     for dataframe in data_frame
+    #                 ]
+
+    #                 multiple_dataframes_instruction = self._non_default_prompts.get(
+    #                     "multiple_dataframes", MultipleDataframesPrompt
+    #                 )
+    #                 code = self._llm.generate_code(
+    #                     multiple_dataframes_instruction(dataframes=heads),
+    #                     prompt,
+    #                 )
+
+    #                 self._original_instructions = {
+    #                     "question": prompt,
+    #                     "df_head": heads,
+    #                 }
+
+    #             else:
+    #                 df_head = data_frame.head(rows_to_display)
+    #                 if anonymize_df:
+    #                     df_head = anonymize_dataframe_head(df_head)
+
+    #                 df_head = df_head.to_csv(index=False)
+    #                 generate_code_instruction = self._non_default_prompts.get(
+    #                     "generate_python_code", GeneratePythonCodePrompt
+    #                 )(
+    #                     prompt=prompt,
+    #                     df_head=df_head,
+    #                     num_rows=data_frame.shape[0],
+    #                     num_columns=data_frame.shape[1],
+    #                 )
+    #                 code = self._llm.generate_code(
+    #                     generate_code_instruction,
+    #                     prompt,
+    #                 )
+
+    #                 self._original_instructions = {
+    #                     "question": prompt,
+    #                     "df_head": df_head,
+    #                     "num_rows": data_frame.shape[0],
+    #                     "num_columns": data_frame.shape[1],
+    #                 }
+
+    #             self.last_code_generated = code
+    #             self.log(
+    #                 f"""
+    #                     Code generated:
+    #                     ```
+    #                     {code}
+    #                     ```
+    #                 """
+    #             )
+
+    #             if self._enable_cache and self._cache:
+    #                 self._cache.set(prompt, code)
+
+    #         if show_code and self._in_notebook:
+    #             self.notebook.create_new_cell(code)
+
+    #         for middleware in self._middlewares:
+    #             code = middleware(code)
+
+    #         answer = self.run_code(
+    #             code,
+    #             data_frame,
+    #             use_error_correction_framework=use_error_correction_framework,
+    #         )
+    #         self.code_output = answer
+    #         self.log(f"Answer: {answer}")
+
+    #         if is_conversational_answer is None:
+    #             is_conversational_answer = self._is_conversational_answer
+    #         if is_conversational_answer:
+    #             answer = self.conversational_answer(prompt, answer)
+    #             self.log(f"Conversational answer: {answer}")
+
+    #         self.log(f"Executed in: {time.time() - self._start_time}s")
+
+    #         return answer
+    #     except Exception as exception:
+    #         self.last_error = str(exception)
+    #         print(exception)
+    #         return (
+    #             "Unfortunately, I was not able to answer your question, "
+    #             "because of the following error:\n"
+    #             f"\n{exception}\n"
+    #         )
     def custom_run(self,
         data_frame: Union[pd.DataFrame, List[pd.DataFrame]],
         prompt: str,
@@ -73,7 +206,7 @@ class CustomPandasAI(PandasAI):
         use_error_correction_framework: bool = True,
     ) -> Union[str, pd.DataFrame]:
         try:
-            result = super().run(
+            result = self.run(
                 data_frame,
                 prompt,
                 is_conversational_answer,

@@ -12,10 +12,10 @@ class CustomGenerateResponsePrompt(Prompt):
     Question: {question}
     Answer: {answer}
 
-    Rewrite the answer to the question in a conversational way. If the question relies on visualization, respond with "Refer to the visualization generated on the right.".
+    Rewrite the answer to the question in a conversational way. ONLY use the information in the answer provided. If the question relies on visualization, respond with "Refer to the visualization generated on the right.".
     """
 
-class GeneratePythonCodePrompt(Prompt):
+class CustomGeneratePythonCodePrompt(Prompt):
     """Prompt to generate Python code"""
 
     text: str = """
@@ -24,7 +24,8 @@ class GeneratePythonCodePrompt(Prompt):
         This is the metadata of the dataframe:
         {df_head}.
 
-        When asked about the data, your response should include a python code that describes the dataframe `df`. Assume that columns may have None or NaN values.
+        When asked about the data, your response should include a python code that describes the dataframe `df`. 
+        Assume that columns may have None or NaN values. Make sure column names are case-sensitive match EXACTLY as they appear in the dataframe.
         Using the provided dataframe, df, return the python code and make sure to prefix the requested python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG} exactly to get the answer to the following question:
         """  # noqa: E501
 
