@@ -8,7 +8,7 @@ from streamlit_chat import message
 import pandas as pd
 # from pandasai import PandasAI
 from src.pandasai_custom import CustomPandasAI
-from src.prompts import CustomGenerateResponsePrompt
+from src.prompts import *
 from src.sqlite import * 
 
 from pandasai.llm.openai import OpenAI
@@ -102,6 +102,7 @@ def main():
             llm = OpenAI(temperature=0)
             custom_prompts = {
                 "generate_response": CustomGenerateResponsePrompt,
+                "generate_python_code": GeneratePythonCodePrompt,
             }
             st.session_state.pai = CustomPandasAI(llm=llm, conversational=True, enable_cache=False,
                                                   non_default_prompts=custom_prompts)
@@ -111,6 +112,7 @@ def main():
 
             # Use DF randomization to generate better df.head() for context
             random_df = chat.randomize_df(df.copy(), add_nulls=True)
+            # st.dataframe(random_df.head(5))
             # Generate answer by call to PandasAI
             answer = chat.answer(user_input, pai, random_df)
             

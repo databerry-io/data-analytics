@@ -15,21 +15,26 @@ class CustomGenerateResponsePrompt(Prompt):
     Rewrite the answer to the question in a conversational way. If the question relies on visualization, respond with "Refer to the visualization generated on the right.".
     """
 
-class CustomGeneratePythonCodePrompt(Prompt):
+class GeneratePythonCodePrompt(Prompt):
     """Prompt to generate Python code"""
 
     text: str = """
-                Today is {today_date}.
-                You are provided with a pandas dataframe (df) with {num_rows} rows and {num_columns} columns.
-                This is the metadata of the dataframe:
-                {df_head}.
+        Today is {today_date}.
+        You are provided with a pandas dataframe (df) with {num_rows} rows and {num_columns} columns.
+        This is the metadata of the dataframe:
+        {df_head}.
 
-                When asked about the data, your response should include a python code that describes the dataframe `df`.
-                Using the provided dataframe, df, return the python code to get the answer to the following question:
-                """ 
+        When asked about the data, your response should include a python code that describes the dataframe `df`. Assume that columns may have None or NaN values.
+        Using the provided dataframe, df, return the python code and make sure to prefix the requested python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG} exactly to get the answer to the following question:
+        """  # noqa: E501
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs, today_date=date.today())
+        super().__init__(
+            **kwargs,
+            START_CODE_TAG=START_CODE_TAG,
+            END_CODE_TAG=END_CODE_TAG,
+            today_date=date.today()
+        )
 
 class CodeSummaryPrompt(Prompt):
     """Prompt to generate Python code"""
