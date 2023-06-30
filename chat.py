@@ -5,6 +5,7 @@ import logging
 import pandas  as pd
 import pandasai as pdai
 from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
+from typing import List, Union
 
 # Initialize logging with the specified configuration
 logging.basicConfig(
@@ -18,7 +19,7 @@ logging.basicConfig(
 LOGGER = logging.getLogger(__name__)
 
 # Define answer generation function
-def answer(prompt: str, pai: pdai.PandasAI, df: pd.DataFrame):
+def answer(prompt: str, pai: pdai.PandasAI, df: Union[pd.DataFrame, List[pd.DataFrame]]):
 
     # Log a message indicating that the function has started
     LOGGER.info(f"Start answering based on prompt: {prompt}.")

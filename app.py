@@ -18,6 +18,7 @@ from pandasai.middlewares.streamlit import StreamlitMiddleware
 from pandasai.exceptions import NoCodeFoundError
 from dotenv import load_dotenv
 import sqlite3
+import config
 
 load_dotenv()
 
@@ -64,6 +65,7 @@ def get_text():
     input_text = st.text_input("Ask your Question", key="input", on_change=clear_input_text)
     return input_text
 
+
 @st.cache_data
 def parse_csv(file):
     return pd.read_csv(file)
@@ -84,17 +86,20 @@ def main():
         col1, col2, _ = st.columns((25,50,25))
 
         with col2:
-            user_input = get_text()
-            uploaded_file = st.file_uploader("**Upload Your CSV/XLSX File**", type=['xlsx', 'csv'])
-    
+            user_input= get_text()
+            uploaded_files = st.file_uploader("**Upload Your CSV/XLSX File**", type=['xlsx', 'csv'], accept_multiple_files=True)
 
-    if uploaded_file:
+    df = []
+
+    if uploaded_files:
         if "df" not in st.session_state:
-            file_extension = uploaded_file.name.split(".")[-1].lower()
+            file_extension = uploaded_files[0].name.split(".")[-1].lower()
             if file_extension == 'xlsx':
-                df = parse_xlsx(uploaded_file)
+                for uploaded_file in uploaded_files:
+                    df.append(parse_xlsx(uploaded_file))
             elif file_extension == 'csv':
-                df = parse_csv(uploaded_file)
+                for uploaded_file in uploaded_files:
+                    df.append(parse_csv(uploaded_file))
             else:
                 st.error("Unsupported file type. Please upload a CSV or XLSX file.")
 
@@ -111,8 +116,7 @@ def main():
             answer = chat.answer(user_input, pai, df.copy())
             # store the output
             st.session_state.past.append(user_input)
-            st.session_state.generated.append(answer)
-            
+            st.session_state.generated.append(answer)            
             
             if pai.last_code_executed:
                 st.session_state.citation.append(pai.last_code_executed)
@@ -123,9 +127,9 @@ def main():
                 st.session_state.generated_code.append(pai.last_code_generated)
             else:
                 st.session_state.generated_code.append("# No code generated")
-            
-            full_prompt = chat.get_prompt(user_input, df)
-            log_prompt(conn, cursor, user_input, full_prompt, answer, pai.last_code_executed, 
+            for item in df:
+                full_prompt = chat.get_prompt(user_input, item)
+                log_prompt(conn, cursor, user_input, full_prompt, answer, pai.last_code_executed, 
                        pai.last_code_generated, pai.last_error)
 
         with st.container():
@@ -133,7 +137,8 @@ def main():
             with col2:
                 if "df" in st.session_state:
                     # Display the centered DataFrame
-                    st.dataframe(st.session_state.df, height=1)
+                    for item in st.session_state.df:
+                        st.dataframe(item, height=1)
 
         with st.container():
             col1, col2 = st.columns(2)
@@ -173,7 +178,7 @@ def main():
                     
                     if code_generated:
                         last_prompt = st.session_state.past[-1]
-                        code_summary = pai.generate_code_summary(df, last_prompt, code_generated)
+                        code_summary = pai.generate_code_summary(df[-1], last_prompt, code_generated)
                         st.info(code_summary)
 
                 except NoCodeFoundError:
