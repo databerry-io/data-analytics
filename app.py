@@ -108,7 +108,8 @@ def main():
         else:
             pai = st.session_state.pai
             df = st.session_state.df
-            answer = chat.answer(user_input, pai, df.copy())
+            random_df = chat.randomize_df(df.copy())
+            answer = chat.answer(user_input, pai, random_df)
             # store the output
             st.session_state.past.append(user_input)
             st.session_state.generated.append(answer)
@@ -178,9 +179,6 @@ def main():
 
                 except NoCodeFoundError:
                     print("No code")
-
-
-
 
     # if st.session_state['generated']:
     #     for i in range(len(st.session_state['generated'])-1, -1, -1):

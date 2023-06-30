@@ -42,3 +42,15 @@ def get_prompt(prompt, data_frame, suffix="\n\nCode:\n"):
     )
     
     return str(instruction) + str(prompt) + suffix
+
+def randomize_df(df, add_nulls=False):
+    df['NullCount'] = df.isnull().sum(axis=1)
+    df_sorted = df.sort_values('NullCount', ascending=True)
+
+    df_final = df_sorted.drop('NullCount', axis=1)
+
+    if add_nulls:
+        # add a row of null values to top of the dataframe
+        df_final = pd.concat([pd.Series([None for _ in range(df_final.shape[1])], index=df_final.columns), df_final]).reset_index(drop=True)
+
+    return df_final

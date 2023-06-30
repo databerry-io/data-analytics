@@ -15,6 +15,22 @@ class CustomGenerateResponsePrompt(Prompt):
     Rewrite the answer to the question in a conversational way. If the question relies on visualization, respond with "Refer to the visualization generated on the right.".
     """
 
+class CustomGeneratePythonCodePrompt(Prompt):
+    """Prompt to generate Python code"""
+
+    text: str = """
+                Today is {today_date}.
+                You are provided with a pandas dataframe (df) with {num_rows} rows and {num_columns} columns.
+                This is the metadata of the dataframe:
+                {df_head}.
+
+                When asked about the data, your response should include a python code that describes the dataframe `df`.
+                Using the provided dataframe, df, return the python code to get the answer to the following question:
+                """ 
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs, today_date=date.today())
+
 class CodeSummaryPrompt(Prompt):
     """Prompt to generate Python code"""
     # pylint: disable=too-few-public-methods
