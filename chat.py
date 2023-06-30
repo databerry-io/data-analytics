@@ -75,5 +75,5 @@ def extract_dfs(env):
     dfs = []
     for key in env:
         if isinstance(env[key], pd.DataFrame):
-            dfs.append(env[key])
+            dfs.append(key)
     return dfs
