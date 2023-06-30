@@ -292,6 +292,6 @@ Code running:
             except Exception:
                 pass
         
-        return captured_output, result
+        return captured_output, result, environment
 
         

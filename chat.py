@@ -58,6 +58,12 @@ def randomize_df(df, add_nulls=False):
 
     if add_nulls:
         # add a row of null values to top of the dataframe
-        df_final = pd.concat([pd.Series([None for _ in range(df_final.shape[1])], index=df_final.columns), df_final]).reset_index(drop=True)
+        new_row = pd.Series([None] * len(df_final.columns), index=df_final.columns)
+
+        # Concatenate the new row and DataFrame vertically
+        df_final = pd.concat([pd.DataFrame([new_row]), df_final])
+
+        # Reset the index while preserving the sorted order
+        df_final.reset_index(drop=True, inplace=True)
 
     return df_final

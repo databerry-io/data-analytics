@@ -110,7 +110,7 @@ def main():
             df = st.session_state.df
 
             # Use DF randomization to generate better df.head() for context
-            random_df = chat.randomize_df(df.copy())
+            random_df = chat.randomize_df(df.copy(), add_nulls=True)
             # Generate answer by call to PandasAI
             answer = chat.answer(user_input, pai, random_df)
             
@@ -178,7 +178,9 @@ def main():
                     has_chart = rerun_code != "import streamlit as st\n" + code_generated
 
                     # Get output and result, which holds the standard io stream output
-                    output, result = pai.get_code_output(rerun_code, df, use_error_correction_framework=False, has_chart=has_chart)
+                    output, result, environment = pai.get_code_output(rerun_code, df, use_error_correction_framework=False, has_chart=has_chart)
+                    
+                    st.code(environment.keys())
 
                     # Only generate the output code and result if there is no chart
                     if not has_chart:
