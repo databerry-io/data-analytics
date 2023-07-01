@@ -18,6 +18,7 @@ from pandasai.middlewares.streamlit import StreamlitMiddleware
 from pandasai.exceptions import NoCodeFoundError
 from dotenv import load_dotenv
 import sqlite3
+import config
 
 load_dotenv()
 
@@ -64,6 +65,7 @@ def get_text():
     input_text = st.text_input("Ask your Question", key="input", on_change=clear_input_text)
     return input_text
 
+
 @st.cache_data
 def parse_csv(file):
     return pd.read_csv(file)
@@ -84,17 +86,20 @@ def main():
         col1, col2, _ = st.columns((25,50,25))
 
         with col2:
-            user_input = get_text()
-            uploaded_file = st.file_uploader("**Upload Your CSV/XLSX File**", type=['xlsx', 'csv'])
-    
+            user_input= get_text()
+            uploaded_files = st.file_uploader("**Upload Your CSV/XLSX File**", type=['xlsx', 'csv'], accept_multiple_files=True)
 
-    if uploaded_file:
+    df = []
+
+    if uploaded_files:
         if "df" not in st.session_state:
-            file_extension = uploaded_file.name.split(".")[-1].lower()
+            file_extension = uploaded_files[0].name.split(".")[-1].lower()
             if file_extension == 'xlsx':
-                df = parse_xlsx(uploaded_file)
+                for uploaded_file in uploaded_files:
+                    df.append(parse_xlsx(uploaded_file))
             elif file_extension == 'csv':
-                df = parse_csv(uploaded_file)
+                for uploaded_file in uploaded_files:
+                    df.append(parse_csv(uploaded_file))
             else:
                 st.error("Unsupported file type. Please upload a CSV or XLSX file.")
 
@@ -111,7 +116,7 @@ def main():
             df = st.session_state.df
 
             # Use DF randomization to generate better df.head() for context
-            random_df = randomize_df(df.copy(), add_nulls=False)
+            random_df = randomize_df(copy_dfs(df), add_nulls=True)
             # st.dataframe(random_df.head(5))
             # Generate answer by call to PandasAI
             answer = run_prompt(user_input, pai, random_df)
@@ -132,10 +137,7 @@ def main():
             else:
                 st.session_state.generated_code.append("# No code generated")
             
-            # Generate the full prompt passed to the LLM for logging
             full_prompt = get_prompt(user_input, df)
-
-            # Log the prompt-answer pair + metadata in the database
             log_prompt(conn, cursor, user_input, full_prompt, answer, pai.last_code_executed, 
                        pai.last_code_generated, pai.last_error)
 
@@ -144,7 +146,8 @@ def main():
             with col2:
                 if "df" in st.session_state:
                     # Display the centered DataFrame
-                    st.dataframe(st.session_state.df, height=1)
+                    for item in st.session_state.df:
+                        st.dataframe(item, height=1)
 
         with st.container():
             col1, col2 = st.columns(2)
@@ -169,8 +172,8 @@ def main():
                 # Grab last code generated
                 code_generated = st.session_state.generated_code[-1]
                 st.code(code_generated, language='python')
-
-                df = st.session_state.df.copy()
+            
+                df = copy_dfs(st.session_state.df)
                 pai = st.session_state.pai
                 try:
                     # Replace any plots with streamlit plots for display
@@ -178,13 +181,8 @@ def main():
 
                     # Not the most rigorous implementation of checking for charts, but it works
                     has_chart = rerun_code != "import streamlit as st\n" + code_generated
-
-                    # Get output and result, which holds the standard io stream output
                     output, result, environment = pai.get_code_output(rerun_code, df, use_error_correction_framework=False, has_chart=has_chart)
-                    
-                    st.code(environment.keys())
 
-                    # Only generate the output code and result if there is no chart
                     if not has_chart:
                         if output:
                             st.code(output)
@@ -194,7 +192,7 @@ def main():
                     # If there is code, generate a code summary to explain what the code does
                     if code_generated:
                         last_prompt = st.session_state.past[-1]
-                        code_summary = pai.generate_code_summary(df, last_prompt, code_generated)
+                        code_summary = pai.generate_code_summary(len(df), last_prompt, code_generated) # Change
                         st.info(code_summary)
 
                 except NoCodeFoundError:

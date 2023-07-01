@@ -35,10 +35,10 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS prompt_log (
                 )''')
 conn.commit()
 
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide", page_icon="1️⃣", page_title="Data Analytics: Single Dataset")
 #Creating the chatbot interface
 # st.title("Data Analytics Chatbot")
-st.markdown("<h1 style='text-align: center;'>Mobius: Data Analytics</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>Mobius: Single Dataset ONLY</h1>", unsafe_allow_html=True)
 
 # Storing the chat
 if 'generated' not in st.session_state:

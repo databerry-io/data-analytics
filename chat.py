@@ -4,8 +4,10 @@ import logging
 # from typing import List
 import pandas  as pd
 import pandasai as pdai
-# from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
-from src.prompts import CustomGeneratePythonCodePrompt
+from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
+from pandasai.prompts.multiple_dataframes import MultipleDataframesPrompt
+from typing import List
+from copy import deepcopy
 
 # Initialize logging with the specified configuration
 logging.basicConfig(
@@ -35,17 +37,19 @@ def run_prompt(prompt: str, pai: pdai.PandasAI, df: pd.DataFrame):
 
 
 def get_prompt(prompt, data_frame, suffix="\n\nCode:\n"):
-    """
-    Retrieve full prompt passed to LLM for logging purposes
-    """
-
-    df_head = data_frame.head().to_csv(index=False)
-    instruction = CustomGeneratePythonCodePrompt(
-        prompt=prompt,
-        df_head=data_frame.head(),
-        num_rows=data_frame.shape[0],
-        num_columns=data_frame.shape[1],
-    )
+    if isinstance(data_frame, list):
+        heads = [
+            df.head()
+            for df in data_frame
+        ]
+        instruction = MultipleDataframesPrompt(heads)
+    else:
+        instruction = GeneratePythonCodePrompt(
+            prompt=prompt,
+            df_head=data_frame.head(5),
+            num_rows=data_frame.shape[0],
+            num_columns=data_frame.shape[1],
+        )
     
     return str(instruction) + str(prompt) + suffix
 
@@ -53,23 +57,27 @@ def randomize_df(df, add_nulls=False):
     """
     Sort df to ensure better df.head() representation
     """
+    def _helper_randomizer(df):
+        df['NullCount'] = df.isnull().sum(axis=1)
+        df_sorted = df.sort_values('NullCount', ascending=True)
 
-    df['NullCount'] = df.isnull().sum(axis=1)
-    df_sorted = df.sort_values('NullCount', ascending=True)
+        df_final = df_sorted.drop('NullCount', axis=1)
 
-    df_final = df_sorted.drop('NullCount', axis=1)
+        if add_nulls:
+            # add a row of null values to top of the dataframe
+            new_row = pd.Series([None] * len(df_final.columns), index=df_final.columns)
 
-    if add_nulls:
-        # add a row of null values to top of the dataframe
-        new_row = pd.Series([None] * len(df_final.columns), index=df_final.columns)
+            # Concatenate the new row and DataFrame vertically
+            df_final = pd.concat([pd.DataFrame([new_row]), df_final])
 
-        # Concatenate the new row and DataFrame vertically
-        df_final = pd.concat([pd.DataFrame([new_row]), df_final])
+            # Reset the index while preserving the sorted order
+            df_final.reset_index(drop=True, inplace=True)
 
-        # Reset the index while preserving the sorted order
-        df_final.reset_index(drop=True, inplace=True)
-
-    return df_final
+        return df_final
+    if isinstance(df, list):
+        return list(map(_helper_randomizer, df))
+    
+    return _helper_randomizer(df)
 
 def extract_dfs(env):
     dfs = []
@@ -77,3 +85,6 @@ def extract_dfs(env):
         if isinstance(env[key], pd.DataFrame):
             dfs.append(env[key])
     return dfs
+
+def copy_dfs(dfs):
+    return deepcopy(dfs)

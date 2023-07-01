@@ -2,7 +2,7 @@ import streamlit as st
 from src.sqlite import retrieve_prompt_log
 import sqlite3
 
-st.set_page_config(layout="wide", page_title="Prompt DB", page_icon="📊")
+st.set_page_config(layout="wide", page_title="Data Analytics: Prompt DB", page_icon="📝")
 
 st.markdown("# Prompt Database")
 # st.sidebar.header("")
