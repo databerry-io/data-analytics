@@ -109,8 +109,11 @@ def main():
                 "generate_python_code": CustomGeneratePythonCodePrompt,
                 "generate_response": CustomGenerateResponsePrompt,
             }
+
+            custom_whitelist = ['random', 'matplotlib', 'seaborn', 'pandas']
             st.session_state.pai = CustomPandasAI(llm=llm, conversational=True, enable_cache=False,
-                                                  non_default_prompts=custom_prompts)
+                                                  non_default_prompts=custom_prompts,
+                                                  custom_whitelisted_dependencies=custom_whitelist)
         else:
             pai = st.session_state.pai
             df = st.session_state.df
@@ -194,6 +197,13 @@ def main():
                         last_prompt = st.session_state.past[-1]
                         code_summary = pai.generate_code_summary(len(df), last_prompt, code_generated) # Change
                         st.info(code_summary)
+
+                    dfs_in_env = extract_dfs(environment)
+
+                    if dfs_in_env:
+                        option = st.selectbox(
+                            'Add dataframe to sources',
+                            dfs_in_env)
 
                 except NoCodeFoundError:
                     print("No code")
