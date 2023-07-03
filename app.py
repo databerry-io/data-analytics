@@ -105,6 +105,9 @@ def main():
                 st.error("Unsupported file type. Please upload a CSV or XLSX file.")
 
             st.session_state.df = df
+            random_df = randomize_df(copy_dfs(df), add_nulls=True)
+            st.session_state.random_df = random_df
+
             llm = OpenAI(temperature=0)
             custom_prompts = {
                 "generate_python_code": CustomGeneratePythonCodePrompt,
@@ -118,11 +121,10 @@ def main():
         else:
             if button:
                 pai = st.session_state.pai
-                df = st.session_state.df
+                random_df = st.session_state.random_df
 
                 # Use DF randomization to generate better df.head() for context
-                # random_df = randomize_df(copy_dfs(df), add_nulls=True)
-                random_df = copy_dfs(df)
+                
                 # st.dataframe(random_df.head(5))
                 # Generate answer by call to PandasAI
                 answer = run_prompt(user_input, pai, random_df)
@@ -180,7 +182,7 @@ def main():
                 code_generated = st.session_state.code_generated[-1]
                 st.code(code_executed, language='python')
             
-                df = copy_dfs(st.session_state.df)
+                df = copy_dfs(st.session_state.random_df)
                 pai = st.session_state.pai
                 try:
                     # Replace any plots with streamlit plots for display
