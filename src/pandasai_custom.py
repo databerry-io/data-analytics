@@ -12,6 +12,8 @@ from pandasai.middlewares.streamlit import StreamlitMiddleware
 
 # import astor
 import pandas as pd
+
+# Configure it such that pandas head does NOT truncate the dataframe
 pd.set_option('display.max_columns', None)
 
 from pandasai.constants import (
