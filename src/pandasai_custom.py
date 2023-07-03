@@ -12,6 +12,8 @@ from pandasai.middlewares.streamlit import StreamlitMiddleware
 
 # import astor
 import pandas as pd
+pd.set_option('display.max_columns', None)
+
 from pandasai.constants import (
     WHITELISTED_BUILTINS,
     WHITELISTED_LIBRARIES,
