@@ -4,11 +4,11 @@ import io
 # import logging
 import re
 # import sys
-import uuid
-import time
+# import uuid
+# import time
 from contextlib import redirect_stdout
 from typing import List, Optional, Union
-from pandasai.middlewares.streamlit import StreamlitMiddleware
+# from pandasai.middlewares.streamlit import StreamlitMiddleware
 
 # import astor
 import pandas as pd
@@ -16,10 +16,10 @@ import pandas as pd
 # Configure it such that pandas head does NOT truncate the dataframe
 pd.set_option('display.max_columns', None)
 
-from pandasai.constants import (
-    WHITELISTED_BUILTINS,
-    WHITELISTED_LIBRARIES,
-)
+# from pandasai.constants import (
+#     WHITELISTED_BUILTINS,
+#     WHITELISTED_LIBRARIES,
+# )
 # from pandasai.exceptions import BadImportError, LLMNotFoundError
 # from pandasai.helpers._optional import import_dependency
 from pandasai.helpers.anonymizer import anonymize_dataframe_head
@@ -33,9 +33,9 @@ from pandasai.helpers.save_chart import add_save_chart
 # from pandasai.middlewares.charts import ChartsMiddleware
 # from pandasai.prompts.correct_error_prompt import CorrectErrorPrompt
 # from pandasai.prompts.correct_multiples_prompt import CorrectMultipleDataframesErrorPrompt
-from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
+# from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
 # from pandasai.prompts.generate_response import GenerateResponsePrompt
-from pandasai.prompts.multiple_dataframes import MultipleDataframesPrompt
+# from pandasai.prompts.multiple_dataframes import MultipleDataframesPrompt
 
 from pandasai import PandasAI
 import contextlib

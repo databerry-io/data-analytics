@@ -4,9 +4,9 @@ import logging
 # from typing import List
 import pandas  as pd
 import pandasai as pdai
-from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
-from pandasai.prompts.multiple_dataframes import MultipleDataframesPrompt
-from typing import List
+# from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
+# from pandasai.prompts.multiple_dataframes import MultipleDataframesPrompt
+# from typing import List
 from copy import deepcopy
 
 # Initialize logging with the specified configuration
