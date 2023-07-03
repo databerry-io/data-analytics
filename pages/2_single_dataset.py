@@ -105,7 +105,7 @@ def main():
 
             
             custom_prompts = {
-                "generate_python_code": PYTHON_CODE_PROMPT,
+                "generate_python_code": config.PYTHON_CODE_PROMPT,
                 "generate_response": CustomGenerateResponsePrompt,
             }
             st.session_state.pai = CustomPandasAI(llm=llm, conversational=True, enable_cache=False,
