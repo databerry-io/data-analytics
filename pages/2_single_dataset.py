@@ -40,6 +40,8 @@ st.set_page_config(layout="wide", page_icon="1️⃣", page_title="Data Analytic
 # st.title("Data Analytics Chatbot")
 st.markdown("<h1 style='text-align: center;'>Mobius: Single Dataset ONLY</h1>", unsafe_allow_html=True)
 
+# Prompts
+
 # Storing the chat
 if 'generated' not in st.session_state:
     st.session_state['generated'] = []
@@ -100,8 +102,10 @@ def main():
 
             st.session_state.df = df
             llm = OpenAI(temperature=0)
+
+            
             custom_prompts = {
-                "generate_python_code": CustomGeneratePythonCodePrompt,
+                "generate_python_code": PYTHON_CODE_PROMPT,
                 "generate_response": CustomGenerateResponsePrompt,
             }
             st.session_state.pai = CustomPandasAI(llm=llm, conversational=True, enable_cache=False,

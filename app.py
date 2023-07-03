@@ -1,9 +1,6 @@
 from chat import *
 import streamlit as st
 from streamlit_chat import message
-# from langchain.text_splitter import RecursiveCharacterTextSplitter
-# from langchain.schema import Document
-# import config
 
 import pandas as pd
 # from pandasai import PandasAI
@@ -118,8 +115,9 @@ def main():
 
             llm = OpenAI(temperature=0)
             custom_prompts = {
-                "generate_python_code": CustomGeneratePythonCodePrompt,
+                "generate_python_code": config.PYTHON_CODE_PROMPT,
                 "generate_response": CustomGenerateResponsePrompt,
+                "multiple_dataframes": config.MULTIPLE_PYTHON_CODE_PROMPT,
             }
 
             custom_whitelist = ['random', 'matplotlib', 'seaborn', 'pandas']
@@ -217,7 +215,7 @@ def main():
 
                     if dfs_in_env:
                         option = st.selectbox(
-                            'Add dataframe to sources',
+                            'Select dataframe to download',
                             [''] + dfs_in_env)
                         
                         if option:

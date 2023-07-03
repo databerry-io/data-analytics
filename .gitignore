@@ -1,7 +1,6 @@
 env/
 .chroma
 **/*__pycache__
-config.py
 cache/
 logs/
 pandasai.log

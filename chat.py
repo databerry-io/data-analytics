@@ -42,9 +42,9 @@ def get_prompt(prompt, data_frame, suffix="\n\nCode:\n"):
             df.head()
             for df in data_frame
         ]
-        instruction = MultipleDataframesPrompt(heads)
+        instruction = config.MULTIPLE_PYTHON_CODE_PROMPT(heads)
     else:
-        instruction = GeneratePythonCodePrompt(
+        instruction = config.PYTHON_CODE_PROMPT(
             prompt=prompt,
             df_head=data_frame.head(5),
             num_rows=data_frame.shape[0],
