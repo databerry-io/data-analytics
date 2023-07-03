@@ -13,11 +13,19 @@ def log_prompt(conn, cursor, prompt, full_prompt, answer, code_executed, code_ge
                       VALUES (?, ?, ?, ?, ?, ?)''', (prompt, full_prompt, answer, code_executed, code_generated, error))
     conn.commit()
 
+# def retrieve_prompt_log(cursor):
+#     """
+#     Retrieve all prompt-answer pairs from the database
+#     """
+#     cursor.execute('''SELECT * FROM prompt_log''')
+#     log_data = cursor.fetchall()
+#     log_data = log_data[::-1]
+#     return log_data
+
 def retrieve_prompt_log(cursor):
     """
-    Retrieve all prompt-answer pairs from the database
+    Retrieve all prompt-answer pairs from the database, starting with the latest entry
     """
-    cursor.execute('''SELECT * FROM prompt_log''')
-    log_data = cursor.fetchall()
-    log_data = log_data[::-1]
-    return log_data
+    cursor.execute('''SELECT * FROM prompt_log ORDER BY id DESC''')
+    for row in cursor.fetchall():
+        yield row
