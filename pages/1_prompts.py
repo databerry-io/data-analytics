@@ -18,7 +18,7 @@ with col2:
 with col3:
     st.markdown("**Answer**")
 with col4:
-    st.markdown("**Code Executed**")
+    st.markdown("**Code**")
 with col5:
     st.markdown("**Error**")
 
@@ -36,8 +36,12 @@ for log in retrieve_prompt_log(cursor):
     with col3:
         st.success(answer)
     with col4:
-        st.code(code_executed, language="python")
+        st.markdown("**Generted Code**")
         st.code(code_generated, language="python")
+
+        st.markdown("**Executed Code**")
+        st.code(code_executed, language="python")
+
     with col5:
         st.code(error, language="python")
 
