@@ -26,6 +26,6 @@ def retrieve_prompt_log(cursor):
     """
     Retrieve all prompt-answer pairs from the database, starting with the latest entry
     """
-    cursor.execute('''SELECT * FROM prompt_log ORDER BY id DESC''')
+    cursor.execute('''SELECT * FROM prompt_log ORDER BY id DESC LIMIT 50''')
     for row in cursor.fetchall():
         yield row
