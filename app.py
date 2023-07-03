@@ -51,8 +51,8 @@ if 'past' not in st.session_state:
 if 'code_executed' not in st.session_state:
     st.session_state['code_executed'] = []
 
-if 'generated_code' not in st.session_state:
-    st.session_state['generated_code'] = []
+if 'code_generated' not in st.session_state:
+    st.session_state['code_generated'] = []
 
 # Define a function to clear the input text
 def clear_input_text():
@@ -121,7 +121,8 @@ def main():
                 df = st.session_state.df
 
                 # Use DF randomization to generate better df.head() for context
-                random_df = randomize_df(copy_dfs(df), add_nulls=True)
+                # random_df = randomize_df(copy_dfs(df), add_nulls=True)
+                random_df = copy_dfs(df)
                 # st.dataframe(random_df.head(5))
                 # Generate answer by call to PandasAI
                 answer = run_prompt(user_input, pai, random_df)
@@ -138,9 +139,9 @@ def main():
 
                 # Ensure that code_generated is not empty
                 if pai.last_code_generated:
-                    st.session_state.generated_code.append(pai.last_code_generated)
+                    st.session_state.code_generated.append(pai.last_code_generated)
                 else:
-                    st.session_state.generated_code.append("# No code generated")
+                    st.session_state.code_generated.append("# No code generated")
                 
                 full_prompt = get_prompt(user_input, random_df)
                 log_prompt(conn, cursor, user_input, full_prompt, answer, pai.last_code_executed, 
@@ -175,8 +176,9 @@ def main():
                 #wrapped_string = textwrap.fill(item, width=50, break_long_words=True)
 
                 # Grab last code generated
-                code_generated = st.session_state.generated_code[-1]
-                st.code(code_generated, language='python')
+                code_executed = st.session_state.code_executed[-1]
+                code_generated = st.session_state.code_generated[-1]
+                st.code(code_executed, language='python')
             
                 df = copy_dfs(st.session_state.df)
                 pai = st.session_state.pai
@@ -197,7 +199,7 @@ def main():
                     # If there is code, generate a code summary to explain what the code does
                     if code_generated:
                         last_prompt = st.session_state.past[-1]
-                        code_summary = pai.generate_code_summary(len(df), last_prompt, code_generated) # Change
+                        code_summary = pai.generate_code_summary(len(df), last_prompt, code_executed) # Change
                         st.info(code_summary)
 
                     dfs_in_env = extract_dfs(environment)
