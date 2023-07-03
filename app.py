@@ -81,6 +81,14 @@ def convert_document_to_dict(document):
         'metadata': document.metadata,  # assuming this is already a dictionary
     }
 
+@st.cache_data
+def df_to_csv(df_name, df):
+    # base_path = "saved_dataframes_csv"
+    # filename = f'{base_path}/{df_name}.csv'
+    
+    return df.to_csv(index=False).encode('utf-8')
+    
+
 def main():
     with st.container():
         col1, col2, _ = st.columns((25,50,25))
@@ -204,12 +212,23 @@ def main():
                         code_summary = pai.generate_code_summary(len(df), last_prompt, code_executed) # Change
                         st.info(code_summary)
 
+                    # Extract variables in the environment that are dataframes so users can download them
                     dfs_in_env = extract_dfs(environment)
 
                     if dfs_in_env:
-                        options = st.multiselect(
+                        option = st.selectbox(
                             'Add dataframe to sources',
-                            dfs_in_env)
+                            [''] + dfs_in_env)
+                        
+                        if option:
+                            save_df = environment[option]
+                            csv_file = df_to_csv(option, save_df)
+                            
+                            st.download_button(
+                                label="Download CSV",
+                                data=csv_file,
+                                file_name=f'{option}.csv'
+                            )
 
                 except NoCodeFoundError:
                     print("No code")
