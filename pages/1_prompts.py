@@ -27,14 +27,14 @@ st.markdown("---")
 for log in retrieve_prompt_log(cursor):
     id, prompt, full_prompt, answer, code_executed, code_generated, error = log
 
-    col1, col2, col3, col4, col5 = st.columns((3, 10, 10, 30, 8))
+    col1, col2, col3, col4, col5 = st.columns((3, 15, 15, 30, 8))
 
     with col1:
-        st.write(id)
+        st.markdown(f"### {id}")
     with col2: 
-        st.write(prompt)
+        st.info(prompt)
     with col3:
-        st.write(answer)
+        st.success(answer)
     with col4:
         st.code(code_executed, language="python")
         st.code(code_generated, language="python")
