@@ -87,6 +87,7 @@ def main():
 
         with col2:
             user_input= get_text()
+            button = st.button("Submit")
             uploaded_files = st.file_uploader("**Upload Your CSV/XLSX File**", type=['xlsx', 'csv'], accept_multiple_files=True)
 
     df = []
@@ -115,34 +116,35 @@ def main():
                                                   non_default_prompts=custom_prompts,
                                                   custom_whitelisted_dependencies=custom_whitelist)
         else:
-            pai = st.session_state.pai
-            df = st.session_state.df
+            if button:
+                pai = st.session_state.pai
+                df = st.session_state.df
 
-            # Use DF randomization to generate better df.head() for context
-            random_df = randomize_df(copy_dfs(df), add_nulls=True)
-            # st.dataframe(random_df.head(5))
-            # Generate answer by call to PandasAI
-            answer = run_prompt(user_input, pai, random_df)
-            
-            # Store the output in session history
-            st.session_state.past.append(user_input)
-            st.session_state.generated.append(answer)
-            
-            # Ensure that code_executed is not empty
-            if pai.last_code_executed:
-                st.session_state.code_executed.append(pai.last_code_executed)
-            else:
-                st.session_state.code_executed.append("# No code executed")
+                # Use DF randomization to generate better df.head() for context
+                random_df = randomize_df(copy_dfs(df), add_nulls=True)
+                # st.dataframe(random_df.head(5))
+                # Generate answer by call to PandasAI
+                answer = run_prompt(user_input, pai, random_df)
+                
+                # Store the output in session history
+                st.session_state.past.append(user_input)
+                st.session_state.generated.append(answer)
+                
+                # Ensure that code_executed is not empty
+                if pai.last_code_executed:
+                    st.session_state.code_executed.append(pai.last_code_executed)
+                else:
+                    st.session_state.code_executed.append("# No code executed")
 
-            # Ensure that code_generated is not empty
-            if pai.last_code_generated:
-                st.session_state.generated_code.append(pai.last_code_generated)
-            else:
-                st.session_state.generated_code.append("# No code generated")
-            
-            full_prompt = get_prompt(user_input, df)
-            log_prompt(conn, cursor, user_input, full_prompt, answer, pai.last_code_executed, 
-                       pai.last_code_generated, pai.last_error)
+                # Ensure that code_generated is not empty
+                if pai.last_code_generated:
+                    st.session_state.generated_code.append(pai.last_code_generated)
+                else:
+                    st.session_state.generated_code.append("# No code generated")
+                
+                full_prompt = get_prompt(user_input, random_df)
+                log_prompt(conn, cursor, user_input, full_prompt, answer, pai.last_code_executed, 
+                        pai.last_code_generated, pai.last_error)
 
         with st.container():
             col1, col2, _ = st.columns((25,50,25))
@@ -201,7 +203,7 @@ def main():
                     dfs_in_env = extract_dfs(environment)
 
                     if dfs_in_env:
-                        option = st.selectbox(
+                        options = st.multiselect(
                             'Add dataframe to sources',
                             dfs_in_env)
 

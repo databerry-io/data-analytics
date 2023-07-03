@@ -133,7 +133,7 @@ def main():
                 st.session_state.generated_code.append("# No code generated")
             
             # Generate the full prompt passed to the LLM for logging
-            full_prompt = get_prompt(user_input, df)
+            full_prompt = get_prompt(user_input, random_df)
 
             # Log the prompt-answer pair + metadata in the database
             log_prompt(conn, cursor, user_input, full_prompt, answer, pai.last_code_executed, 
