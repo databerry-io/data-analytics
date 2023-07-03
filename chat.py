@@ -36,7 +36,7 @@ def run_prompt(prompt: str, pai: pdai.PandasAI, df: pd.DataFrame):
     return answer
 
 
-def get_prompt(prompt, data_frame, suffix="\n\nCode:\n"):
+def get_prompt(prompt, data_frame, suffix=""):
     if isinstance(data_frame, list):
         heads = [
             df.head()
