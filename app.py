@@ -93,7 +93,7 @@ def main():
         with col2:
             user_input= get_text()
 
-            col3, col4, _ = st.columns((2, 3, 9))
+            col3, col4, _ = st.columns((3, 5, 9))
             with col3:
                 button = st.button("Submit")
             with col4:
