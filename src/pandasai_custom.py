@@ -33,9 +33,9 @@ from pandasai.helpers.save_chart import add_save_chart
 # from pandasai.middlewares.charts import ChartsMiddleware
 # from pandasai.prompts.correct_error_prompt import CorrectErrorPrompt
 # from pandasai.prompts.correct_multiples_prompt import CorrectMultipleDataframesErrorPrompt
-# from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
+from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
 # from pandasai.prompts.generate_response import GenerateResponsePrompt
-# from pandasai.prompts.multiple_dataframes import MultipleDataframesPrompt
+from pandasai.prompts.multiple_dataframes import MultipleDataframesPrompt
 
 from pandasai import PandasAI
 import contextlib
@@ -48,6 +48,59 @@ class ExceededMaxRetriesError(Exception):
     """Raised when the maximum number of retries is exceeded"""
 
 class CustomPandasAI(PandasAI):
+
+    def get_raw_response(self, 
+                         prompt, 
+                         data_frame, 
+                         anonymize_df=False):
+        
+        rows_to_display = 0 if self._enforce_privacy else 5
+
+        multiple: bool = isinstance(data_frame, list)
+
+        if multiple:
+            heads = [
+                anonymize_dataframe_head(dataframe)
+                if anonymize_df
+                else dataframe.head(rows_to_display)
+                for dataframe in data_frame
+            ]
+
+            multiple_dataframes_instruction = self._non_default_prompts.get(
+                "multiple_dataframes", MultipleDataframesPrompt
+            )
+            # response = self._llm.generate_code(
+            #     multiple_dataframes_instruction(dataframes=heads),
+            #     prompt,
+            # )
+            response = self._llm.call(multiple_dataframes_instruction(dataframes=heads), 
+                                 prompt, 
+                                 suffix="\n\nCode:\n")
+
+        else:
+            df_head = data_frame.head(rows_to_display)
+            if anonymize_df:
+                df_head = anonymize_dataframe_head(df_head)
+
+            generate_code_instruction = self._non_default_prompts.get(
+                "generate_python_code", GeneratePythonCodePrompt
+            )(
+                prompt=prompt,
+                df_head=df_head,
+                num_rows=data_frame.shape[0],
+                num_columns=data_frame.shape[1],
+            )
+            # response = self._llm.generate_code(
+            #     generate_code_instruction,
+            #     prompt,
+            # )
+            response = self.call(generate_code_instruction, 
+                                 prompt, 
+                                 suffix="\n\nCode:\n")
+        
+        return response
+        
+    
     def generate_code_summary(self, number_dataframes, prompt, code):
         rows_to_display = 0 if self._enforce_privacy else 5
 

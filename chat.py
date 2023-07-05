@@ -8,6 +8,7 @@ import pandasai as pdai
 # from pandasai.prompts.multiple_dataframes import MultipleDataframesPrompt
 # from typing import List
 from copy import deepcopy
+import streamlit as st
 
 # Initialize logging with the specified configuration
 logging.basicConfig(
@@ -88,3 +89,7 @@ def extract_dfs(env):
 
 def copy_dfs(dfs):
     return deepcopy(dfs)
+
+@st.cache_data
+def generate_code_summary(_pai, df_len, prompt, code):
+    return _pai.generate_code_summary(df_len, prompt, code)

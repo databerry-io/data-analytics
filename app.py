@@ -92,7 +92,12 @@ def main():
 
         with col2:
             user_input= get_text()
-            button = st.button("Submit")
+
+            col3, col4, _ = st.columns((2, 3, 9))
+            with col3:
+                button = st.button("Submit")
+            with col4:
+                raw_response_button = st.button("Raw Response")
             uploaded_files = st.file_uploader("**Upload Your CSV/XLSX File**", type=['xlsx', 'csv'], accept_multiple_files=True)
 
     df = []
@@ -154,6 +159,14 @@ def main():
                 full_prompt = get_prompt(user_input, random_df)
                 log_prompt(conn, cursor, user_input, full_prompt, answer, pai.last_code_executed, 
                         pai.last_code_generated, pai.last_error)
+            elif raw_response_button:
+                pai = st.session_state.pai
+                random_df = st.session_state.random_df
+
+                response = pai.get_raw_response(user_input, random_df)
+
+                st.markdown("### Raw Response")
+                st.code(response)
 
         with st.container():
             col1, col2, _ = st.columns((25,50,25))
@@ -207,7 +220,7 @@ def main():
                     # If there is code, generate a code summary to explain what the code does
                     if code_generated:
                         last_prompt = st.session_state.past[-1]
-                        code_summary = pai.generate_code_summary(len(df), last_prompt, code_executed) # Change
+                        code_summary = generate_code_summary(pai, len(df), last_prompt, code_executed)
                         st.info(code_summary)
 
                     # Extract variables in the environment that are dataframes so users can download them
