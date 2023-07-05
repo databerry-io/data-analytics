@@ -83,7 +83,7 @@ Using the provided dataframes and no other dataframes, return the python code to
             row, col = dataframe.shape
 
             self.text += f"""
-Dataframe df{i}, with {row} rows and {col} columns. The data types of the dataframe are:
+Dataframe df{i}, with {row} rows and {col} columns. The data types of the dataframe columns are:
 {dataframe.dtypes}
 
 This is the metadata of the dataframe df{i}:
