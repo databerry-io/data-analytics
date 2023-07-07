@@ -3,7 +3,7 @@ import config
 import logging
 # from typing import List
 import pandas  as pd
-import pandasai as pdai
+from src.pandasai_custom import CustomPandasAI
 # from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
 # from pandasai.prompts.multiple_dataframes import MultipleDataframesPrompt
 # from typing import List
@@ -22,7 +22,7 @@ logging.basicConfig(
 LOGGER = logging.getLogger(__name__)
 
 # Define answer generation function
-def run_prompt(prompt: str, pai: pdai.PandasAI, df: pd.DataFrame):
+def run_prompt(prompt: str, pai: CustomPandasAI, df: pd.DataFrame):
 
     # Log a message indicating that the function has started
     LOGGER.info(f"Start answering based on prompt: {prompt}.")
@@ -37,7 +37,7 @@ def run_prompt(prompt: str, pai: pdai.PandasAI, df: pd.DataFrame):
     return answer
 
 
-def get_prompt(prompt, data_frame, suffix=""):
+def get_prompt(prompt: str, data_frame: pd.DataFrame, suffix: str=""):
     if isinstance(data_frame, list):
         heads = [
             df.head()
@@ -54,7 +54,7 @@ def get_prompt(prompt, data_frame, suffix=""):
     
     return str(instruction) + str(prompt) + suffix
 
-def randomize_df(df, add_nulls=False):
+def randomize_df(df: pd.DataFrame, add_nulls: bool = False):
     """
     Sort df to ensure better df.head() representation
     """
@@ -80,7 +80,7 @@ def randomize_df(df, add_nulls=False):
     
     return _helper_randomizer(df)
 
-def extract_dfs(env):
+def extract_dfs(env: dict):
     dfs = []
     for key in env:
         if isinstance(env[key], pd.DataFrame):
@@ -91,5 +91,5 @@ def copy_dfs(dfs):
     return deepcopy(dfs)
 
 @st.cache_data
-def generate_code_summary(_pai, df_len, prompt, code):
+def generate_code_summary(_pai: CustomPandasAI, df_len: int, prompt: str, code: str):
     return _pai.generate_code_summary(df_len, prompt, code)
