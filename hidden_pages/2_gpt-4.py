@@ -118,7 +118,7 @@ def main():
             random_df = randomize_df(copy_dfs(df), add_nulls=True)
             st.session_state.random_df = random_df
 
-            llm = OpenAI(temperature=0)
+            llm = OpenAI(temperature=0, model="gpt-4")
             custom_prompts = {
                 "generate_python_code": config.PYTHON_CODE_PROMPT,
                 "generate_response": CustomGenerateResponsePrompt,
@@ -209,9 +209,6 @@ def main():
 
                     # Not the most rigorous implementation of checking for charts, but it works
                     has_chart = rerun_code != "import streamlit as st\n" + code_generated
-
-                    if has_chart:
-                        rerun_code = pai.cleanup_graph_code(rerun_code)
                     output, result, environment = pai.get_code_output(rerun_code, df, use_error_correction_framework=False, has_chart=has_chart)
 
                     if not has_chart:
@@ -221,10 +218,10 @@ def main():
                             st.code(result)
                     
                     # If there is code, generate a code summary to explain what the code does
-                    if code_generated:
-                        last_prompt = st.session_state.past[-1]
-                        code_summary = generate_code_summary(pai, len(df), last_prompt, code_executed)
-                        st.info(code_summary)
+                    # if code_generated:
+                    #     last_prompt = st.session_state.past[-1]
+                    #     code_summary = generate_code_summary(pai, len(df), last_prompt, code_executed)
+                    #     st.info(code_summary)
 
                     # Extract variables in the environment that are dataframes so users can download them
                     dfs_in_env = extract_dfs(environment)

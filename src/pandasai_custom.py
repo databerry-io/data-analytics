@@ -31,24 +31,73 @@ from pandasai.helpers.save_chart import add_save_chart
 # from pandasai.llm.langchain import LangchainLLM
 # from pandasai.middlewares.base import Middleware
 # from pandasai.middlewares.charts import ChartsMiddleware
-# from pandasai.prompts.correct_error_prompt import CorrectErrorPrompt
-# from pandasai.prompts.correct_multiples_prompt import CorrectMultipleDataframesErrorPrompt
+from pandasai.prompts.correct_error_prompt import CorrectErrorPrompt
+from pandasai.prompts.correct_multiples_prompt import CorrectMultipleDataframesErrorPrompt
 from pandasai.prompts.generate_python_code import GeneratePythonCodePrompt
 # from pandasai.prompts.generate_response import GenerateResponsePrompt
 from pandasai.prompts.multiple_dataframes import MultipleDataframesPrompt
 
 from pandasai import PandasAI
 import contextlib
-import streamlit as st
-import matplotlib.pyplot as plt
 
-from .prompts import CodeSummaryPrompt
+
+from .prompts import CodeSummaryPrompt, ColumnKeyErrorPrompt, GraphCleaupPrompt
 
 class ExceededMaxRetriesError(Exception):
     """Raised when the maximum number of retries is exceeded"""
 
 class CustomPandasAI(PandasAI):
+    def cleanup_graph_code(self, code):
+        return self._llm.call(GraphCleaupPrompt(),
+                                 code, 
+                                 suffix="\n\nNew Code:\n")
+        
+    def _retry_run_code(self, code: str, e: Exception, multiple: bool = False):
+        """
+        A method to retry the code execution with error correction framework.
 
+        Args:
+            code (str): A python code
+            e (Exception): An exception
+            multiple (bool): A boolean to indicate if the code is for multiple
+            dataframes
+
+        Returns (str): A python code
+        """
+
+        if multiple:
+            if isinstance(e, KeyError):
+                error_correcting_instruction = ColumnKeyErrorPrompt(
+                    code=code,
+                    error_returned=e,
+                    question=self._original_instructions["question"],
+                    df_head=self._original_instructions["df_head"],
+                )
+            else:
+                error_correcting_instruction = self._non_default_prompts.get(
+                    "correct_multiple_dataframes_error",
+                    CorrectMultipleDataframesErrorPrompt,
+                )(
+                    code=code,
+                    error_returned=e,
+                    question=self._original_instructions["question"],
+                    df_head=self._original_instructions["df_head"],
+                )
+
+        else:
+            error_correcting_instruction = self._non_default_prompts.get(
+                "correct_error", CorrectErrorPrompt
+            )(
+                code=code,
+                error_returned=e,
+                question=self._original_instructions["question"],
+                df_head=self._original_instructions["df_head"],
+                num_rows=self._original_instructions["num_rows"],
+                num_columns=self._original_instructions["num_columns"],
+            )
+
+        return self._llm.generate_code(error_correcting_instruction, "")
+    
     def get_raw_response(self, 
                          prompt, 
                          data_frame, 
@@ -94,7 +143,7 @@ class CustomPandasAI(PandasAI):
             #     generate_code_instruction,
             #     prompt,
             # )
-            response = self.call(generate_code_instruction, 
+            response = self._llm.call(generate_code_instruction, 
                                  prompt, 
                                  suffix="\n\nCode:\n")
         

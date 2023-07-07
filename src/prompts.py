@@ -6,6 +6,105 @@ from pandasai.constants import END_CODE_TAG, START_CODE_TAG
 from pandasai.prompts.base import Prompt
 import pandas as pd
 
+class GraphCleaupPrompt(Prompt):
+    text: str = """
+You are modifying the python code below to ensure the following criteria are met:
+- Make sure to sort all dataframes before graphing
+- Use no more than 6 intervals on the x-axis
+- Make sure to add a title, as well as labels for the x-axis and y-axis.
+
+Steps to follow:
+- Add only up to 3 lines of code
+- Insert these lines of code into the code below in the right location
+- Return the final code
+
+Original Code:
+
+"""
+    def __init__(self, **kwargs):
+        super().__init__(
+            **kwargs,
+        )
+        
+class ColumnKeyErrorPrompt(Prompt):
+    """Prompt to generate Python code"""
+
+    text: str = """
+You are provided with the following pandas dataframes metadata:"""
+
+    def __init__(
+        self,
+        code: str,
+        error_returned: Exception,
+        question: str,
+        df_head: list[pd.DataFrame],
+    ):
+        for i, dataframe in enumerate(df_head, start=1):
+            row, col = dataframe.shape
+            self.text += f"""
+Dataframe df{i}, with {row} rows and {col} columns.
+The column names and their respective data types for this dataframe are:
+{dataframe.dtypes}
+"""
+
+        instruction: str = f"""
+The user asked the following question:
+{question}
+
+You generated this python code:
+{code}
+
+It fails with a column key error, meaning you tried to access a column that does not exist. The error returned was:
+{error_returned}
+
+Correct the python code by accessing the column names EXACTLY as they appear with the column names above. Do not generate the same code again.
+"""  # noqa: E501
+
+        self.text += instruction
+
+    def __str__(self):
+        return self.text
+    
+class NullValuesErrorPrompt(Prompt):
+    """Prompt to generate Python code"""
+
+    text: str = """
+You are provided with the following pandas dataframes metadata:"""
+
+    def __init__(
+        self,
+        code: str,
+        error_returned: Exception,
+        question: str,
+        df_head: list[pd.DataFrame],
+    ):
+        for i, dataframe in enumerate(df_head, start=1):
+            row, col = dataframe.shape
+            self.text += f"""
+Dataframe df{i}, with {row} rows and {col} columns.
+The column names and their respective data types for this dataframe are:
+{dataframe.dtypes}
+"""
+
+        instruction: str = f"""
+The user asked the following question:
+{question}
+
+You generated this python code:
+{code}
+
+It fails with a column key error, meaning you tried to access a column that does not exist. The error returned was:
+{error_returned}
+
+Correct the python code by accessing the column names EXACTLY as they appear with the column names above. Do not generate the same code again.
+"""  # noqa: E501
+
+        self.text += instruction
+
+    def __str__(self):
+        return self.text
+
+
 class CustomGenerateResponsePrompt(Prompt):
     """Prompt to generate the response to the question in a conversational way"""
 
@@ -75,6 +174,7 @@ Obey the following rules:
 - Make sure to filter out null, None, and NaN values.
 - Make sure column names are case-sensitive match EXACTLY as they appear in the dataframe.
 - Make sure to prefix the requested python code with {START_CODE_TAG} exactly and suffix the code with {END_CODE_TAG}.
+- If the question relies on visualization, respond with "Refer to the visualization.".
 Using the provided dataframes and no other dataframes, return the python code to get the answer to the following question:
         """ 
 
