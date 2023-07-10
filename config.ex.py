@@ -5,3 +5,5 @@ PYTHON_CODE_PROMPT = CustomGeneratePythonCodePrompt
 MULTIPLE_PYTHON_CODE_PROMPT = CustomMultipleDataframesPrompt
 
 LOGS_FILE = "logs/log.log" 
+
+DEBUG = False
