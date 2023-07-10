@@ -93,7 +93,7 @@ def main():
         with col2:
             user_input= get_text()
 
-            if config.PRODUCTION:
+            if not config.DEBUG:
                 button = st.button("Submit")
             else:
                 col3, col4, _ = st.columns((3, 5, 9))
