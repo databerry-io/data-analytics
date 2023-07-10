@@ -19,6 +19,11 @@ import config
 
 load_dotenv()
 
+if hasattr(config, 'DEBUG'):
+    DEBUG = config.DEBUG
+else:
+    DEBUG = False
+
 conn = sqlite3.connect('prompt_log.db')
 cursor = conn.cursor()
 
@@ -93,7 +98,7 @@ def main():
         with col2:
             user_input= get_text()
 
-            if not config.DEBUG:
+            if not DEBUG:
                 button = st.button("Submit")
             else:
                 col3, col4, _ = st.columns((3, 5, 9))
@@ -162,7 +167,7 @@ def main():
                 full_prompt = get_prompt(user_input, random_df)
                 log_prompt(conn, cursor, user_input, full_prompt, answer, pai.last_code_executed, 
                         pai.last_code_generated, pai.last_error)
-            elif config.DEBUG and raw_response_button:
+            elif DEBUG and raw_response_button:
                 pai = st.session_state.pai
                 random_df = st.session_state.random_df
 
