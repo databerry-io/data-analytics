@@ -10,3 +10,4 @@ test.py
 **/*.ipynb
 logs/
 prompt_log.db
+config.py
