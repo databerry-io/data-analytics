@@ -15,6 +15,7 @@ You are modifying the python code below to ensure the following criteria are met
 
 Steps to follow:
 - Add only up to 3 lines of code
+- Do not delete any of the original code
 - Insert these lines of code into the code below in the right location
 - Return the final code
 
