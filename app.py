@@ -218,6 +218,11 @@ def main():
                     # Not the most rigorous implementation of checking for charts, but it works
                     has_chart = rerun_code != "import streamlit as st\n" + code_generated
 
+                    if has_chart and DEBUG:
+                        second_code = pai.cleanup_graph_code(rerun_code)
+                        st.markdown('## Second Run Code')
+                        st.code(second_code, language='python')
+
                     # if has_chart:
                     #     rerun_code = pai.cleanup_graph_code(rerun_code)
                     output, result, environment = pai.get_code_output(rerun_code, df, use_error_correction_framework=False, has_chart=has_chart)
