@@ -123,7 +123,7 @@ def main():
                 st.error("Unsupported file type. Please upload a CSV or XLSX file.")
 
             st.session_state.df = df
-            random_df = randomize_df(copy_dfs(df), add_nulls=True)
+            random_df = randomize_df(copy_dfs(df), add_nulls=False)
             st.session_state.random_df = random_df
 
             llm = OpenAI(temperature=0)

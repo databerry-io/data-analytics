@@ -72,7 +72,7 @@ def randomize_df(df: pd.DataFrame, add_nulls: bool = False):
             df_final = pd.concat([pd.DataFrame([new_row]), df_final])
 
             # Reset the index while preserving the sorted order
-            df_final.reset_index(drop=True, inplace=True)
+            # df_final.reset_index(drop=True, inplace=True)
 
         return df_final
     if isinstance(df, list):
