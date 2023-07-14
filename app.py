@@ -24,6 +24,11 @@ if hasattr(config, 'DEBUG'):
 else:
     DEBUG = False
 
+if hasattr(config, 'USE_CODE_SUMMARY'):
+    USE_CODE_SUMMARY = config.USE_CODE_SUMMARY
+else:
+    USE_CODE_SUMMARY = True
+
 conn = sqlite3.connect('prompt_log.db')
 cursor = conn.cursor()
 
@@ -123,7 +128,8 @@ def main():
                 st.error("Unsupported file type. Please upload a CSV or XLSX file.")
 
             st.session_state.df = df
-            random_df = randomize_df(copy_dfs(df), add_nulls=False)
+            # random_df = randomize_df(copy_dfs(df), add_nulls=False)
+            random_df = generate_new_head(copy_dfs(df))
             st.session_state.random_df = random_df
 
             llm = OpenAI(temperature=0)
@@ -218,10 +224,10 @@ def main():
                     # Not the most rigorous implementation of checking for charts, but it works
                     has_chart = rerun_code != "import streamlit as st\n" + code_generated
 
-                    if has_chart and DEBUG:
-                        second_code = pai.cleanup_graph_code(rerun_code)
-                        st.markdown('## Second Run Code')
-                        st.code(second_code, language='python')
+                    # if has_chart and DEBUG:
+                    #     second_code = pai.cleanup_graph_code(rerun_code)
+                    #     st.markdown('## Second Run Code')
+                    #     st.code(second_code, language='python')
 
                     # if has_chart:
                     #     rerun_code = pai.cleanup_graph_code(rerun_code)
@@ -234,7 +240,7 @@ def main():
                             st.code(result)
                     
                     # If there is code, generate a code summary to explain what the code does
-                    if code_generated:
+                    if USE_CODE_SUMMARY and code_generated:
                         last_prompt = st.session_state.past[-1]
                         code_summary = generate_code_summary(pai, len(df), last_prompt, code_executed)
                         st.info(code_summary)

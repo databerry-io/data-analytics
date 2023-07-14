@@ -9,6 +9,7 @@ from src.pandasai_custom import CustomPandasAI
 # from typing import List
 from copy import deepcopy
 import streamlit as st
+import numpy as np
 
 # Initialize logging with the specified configuration
 logging.basicConfig(
@@ -93,3 +94,38 @@ def copy_dfs(dfs):
 @st.cache_data
 def generate_code_summary(_pai: CustomPandasAI, df_len: int, prompt: str, code: str):
     return _pai.generate_code_summary(df_len, prompt, code)
+
+
+# Iterate through columns of existing dataframe
+# to generate new column with NaN followed by most common values
+def generate_new_head(df_in, n=5, append_nulls=False):    
+    # Get the n most common values in a given column
+    # If not enough non-NULL values to reach n, then append the least common non-NaN value repeatedly to reach N
+    def get_common_values(s, n):
+        desc_order = s.value_counts()    
+        most_common_values = pd.Series(desc_order.head(n-1).index.to_list())
+        
+        current_length = len(most_common_values)
+        
+        if(current_length < n-1):
+            for num in range(0, n-1-current_length):
+                most_common_values = pd.concat([most_common_values, pd.Series(most_common_values[current_length - 1])], axis = 0)
+                most_common_values = most_common_values.reset_index(drop=True)
+            
+        return most_common_values
+
+    # Append a NaN at the start of an existing series
+    def append_null(s):
+        return pd.concat([pd.Series([np.nan]), s])
+    
+    df_out = pd.DataFrame(df_in.head(n))
+    
+    for column_name, series in df_in.items():
+        new_values = get_common_values(df_in[column_name], n)
+
+        if append_nulls:
+            new_values = append_null(new_values)
+
+        new_values = new_values.reset_index(drop=True)
+        df_out[column_name] = new_values.values
+    return df_out
