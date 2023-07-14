@@ -133,7 +133,7 @@ def main():
             st.session_state.random_df = random_df
 
             # OLD 
-            df_head = old_generate_df_head(copy_dfs(df))
+            df_head = old_generate_df_head(copy_dfs(df), add_nulls=True)
             st.session_state.df_head = df_head
 
             llm = OpenAI(temperature=0)
