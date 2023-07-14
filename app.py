@@ -201,7 +201,9 @@ def main():
                 st.title("Chat")
             with col2:
                 st.title("Code")
-
+    else:
+        if button:
+            st.warning("Please upload a file.")
     st.markdown("""---""")
 
     with st.container():
