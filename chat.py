@@ -23,12 +23,12 @@ logging.basicConfig(
 LOGGER = logging.getLogger(__name__)
 
 # Define answer generation function
-def run_prompt(prompt: str, pai: CustomPandasAI, df: pd.DataFrame):
+def run_prompt(prompt: str, pai: CustomPandasAI, df: pd.DataFrame, df_head=None):
 
     # Log a message indicating that the function has started
     LOGGER.info(f"Start answering based on prompt: {prompt}.")
 
-    answer = pai.custom_run(df, prompt=prompt)
+    answer = pai.custom_run(df, prompt=prompt, df_head=df_head)
 
     # Log a message indicating the answer that was generated
     LOGGER.info(f"The returned answer is: {answer}")
@@ -118,14 +118,44 @@ def generate_new_head(df_in, n=5, append_nulls=False):
     def append_null(s):
         return pd.concat([pd.Series([np.nan]), s])
     
-    df_out = pd.DataFrame(df_in.head(n))
+    def new_head(df_in):
+        df_out = pd.DataFrame(df_in.head(n))
+        
+        for column_name, series in df_in.items():
+            new_values = get_common_values(df_in[column_name], n)
+
+            if append_nulls:
+                new_values = append_null(new_values)
+
+            new_values = new_values.reset_index(drop=True)
+            df_out[column_name] = new_values.values
+    if isinstance(df_in, list):
+        return list(map(new_head, df_in))
     
-    for column_name, series in df_in.items():
-        new_values = get_common_values(df_in[column_name], n)
+    return new_head(df_in)
 
-        if append_nulls:
-            new_values = append_null(new_values)
+def old_generate_df_head(df: pd.DataFrame, add_nulls: bool = False, n=5):
+    """
+    Sort df to ensure better df.head() representation
+    """
+    def _helper_randomizer(df):
+        df['NullCount'] = df.isnull().sum(axis=1)
+        df_sorted = df.sort_values('NullCount', ascending=True)
 
-        new_values = new_values.reset_index(drop=True)
-        df_out[column_name] = new_values.values
-    return df_out
+        df_final = df_sorted.drop('NullCount', axis=1)
+
+        if add_nulls:
+            # add a row of null values to top of the dataframe
+            new_row = pd.Series([None] * len(df_final.columns), index=df_final.columns)
+
+            # Concatenate the new row and DataFrame vertically
+            df_final = pd.concat([pd.DataFrame([new_row]), df_final])
+
+            # Reset the index while preserving the sorted order
+            # df_final.reset_index(drop=True, inplace=True)
+
+        return df_final.head(n)
+    if isinstance(df, list):
+        return list(map(_helper_randomizer, df))
+    
+    return _helper_randomizer(df)

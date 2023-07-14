@@ -106,7 +106,7 @@ def main():
             if not DEBUG:
                 button = st.button("Submit")
             else:
-                col3, col4, _ = st.columns((3, 5, 9))
+                col3, col4, _ = st.columns((3, 5, 7))
                 with col3:
                     button = st.button("Submit")
                 with col4:
@@ -129,8 +129,12 @@ def main():
 
             st.session_state.df = df
             # random_df = randomize_df(copy_dfs(df), add_nulls=False)
-            random_df = generate_new_head(copy_dfs(df))
+            random_df = df
             st.session_state.random_df = random_df
+
+            # OLD 
+            df_head = old_generate_df_head(copy_dfs(df))
+            st.session_state.df_head = df_head
 
             llm = OpenAI(temperature=0)
             custom_prompts = {
@@ -147,12 +151,13 @@ def main():
             if button:
                 pai = st.session_state.pai
                 random_df = st.session_state.random_df
+                df_head = st.session_state.df_head
 
                 # Use DF randomization to generate better df.head() for context
                 
                 # st.dataframe(random_df.head(5))
                 # Generate answer by call to PandasAI
-                answer = run_prompt(user_input, pai, random_df)
+                answer = run_prompt(user_input, pai, random_df, df_head)
                 
                 # Store the output in session history
                 st.session_state.past.append(user_input)
